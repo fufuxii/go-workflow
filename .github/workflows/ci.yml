@@ -1,17 +1,51 @@
-name: CI
+name: Pipeline
+
+run-name: "${{ github.ref_name }} - ${{ github.actor }}"
 
 on:
   push:
     branches:
       - main
 
+  pull_request:
+    branches:
+      - main
+
+env:
+  STAGE: workflow
+
 jobs:
-  build:
+  niveles:
+    runs-on: ubuntu-latest
+    env:
+      STAGE: job
+
+    steps:
+      - name: Variable del job
+        run: echo "$STAGE"
+
+      - name: Variable del step
+        env:
+          STAGE: step
+        run: echo "$STAGE"
+
+  origen:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Variable del workflow
+        run: echo "$STAGE"
 
-      - name: Run Go program
-        run: go run .
+  check-secret:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Comprobar secreto
+        env:
+          PROD_TOKEN: ${{ secrets.PROD_TOKEN }}
+        run: |
+          if [ -z "$PROD_TOKEN" ]; then
+            echo "secreto vacío"
+            exit 1
+          fi
+          echo "secreto presente"
